@@ -1,28 +1,52 @@
-import { useState } from 'react'
+import React, { useState } from 'react';
+import HeaderBar from './components/HeaderBar';
+import StyleCatalog from './components/StyleCatalog';
+import CheckoutAndForm from './components/CheckoutAndForm';
+import MobileInvitationPreview from './components/MobileInvitationPreview';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [auth, setAuth] = useState({ user: null });
+  const [selectedStyle, setSelectedStyle] = useState(null);
+  const [finalData, setFinalData] = useState(null);
+
+  const handleLogin = ({ email }) => setAuth({ user: { email } });
+  const handleLogout = () => { setAuth({ user: null }); setSelectedStyle(null); setFinalData(null); };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Vibe Coding Platform
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Your AI-powered development environment
-        </p>
-        <div className="text-center">
-          <button
-            onClick={() => setCount(count + 1)}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-          >
-            Count is {count}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+    <div className="min-h-screen bg-white text-gray-900">
+      <HeaderBar auth={auth} onLogin={handleLogin} onLogout={handleLogout} />
 
-export default App
+      {!selectedStyle && !finalData && (
+        <>
+          <section className="mx-auto max-w-md px-4 pt-6">
+            <div className="rounded-2xl bg-gradient-to-br from-pink-50 to-rose-50 p-5 border">
+              <h1 className="text-2xl font-bold">Create your digital wedding invitation</h1>
+              <p className="text-sm text-gray-600 mt-2">Login, pick a style, purchase, and fill in your details. Your site is optimized for mobile screens.</p>
+              {!auth.user && (
+                <p className="text-xs text-gray-500 mt-2">Login from the top bar to continue.</p>
+              )}
+            </div>
+          </section>
+          <StyleCatalog authenticated={!!auth.user} onSelect={setSelectedStyle} />
+        </>
+      )}
+
+      {selectedStyle && !finalData && (
+        <CheckoutAndForm
+          style={selectedStyle}
+          onBack={() => setSelectedStyle(null)}
+          onSubmit={(data) => setFinalData(data)}
+        />
+      )}
+
+      {finalData && (
+        <MobileInvitationPreview
+          data={finalData}
+          onReset={() => { setFinalData(null); setSelectedStyle(null); }}
+        />
+      )}
+
+      <div className="h-8" />
+    </div>
+  );
+}
